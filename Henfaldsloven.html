@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Henfaldsloven</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090f;--bg2:#0d1118;--bg3:#111822;
+  --border:#1b2e42;--border2:#0f1e2e;
+  --text:#ccdde8;--text2:#7a9ab5;--text3:#4a6a82;
+  --neon:#00e5ff;--neon2:#00ff99;--accent:#ff7040;
+}
+body.light{
+  --bg:#e8edf4;--bg2:#f4f7fb;--bg3:#dde5f0;
+  --border:#bccfdf;--border2:#cdd9e8;
+  --text:#162232;--text2:#3d6080;--text3:#7a9ab5;
+  --neon:#0052b8;--neon2:#007848;--accent:#b83200;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;
+  height:100vh;display:flex;flex-direction:column;overflow:hidden;transition:background .25s,color .25s}
+
+header{display:flex;align-items:center;justify-content:space-between;
+  padding:9px 22px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
+.title{font-family:'Share Tech Mono',monospace;color:var(--neon);font-size:15px;letter-spacing:1px}
+.title .br{color:var(--text3)}
+.title sub{font-size:.6em;vertical-align:sub}
+.title sup{font-size:.6em;vertical-align:super}
+.hbtns{display:flex;gap:8px}
+.btn{background:transparent;border:1px solid var(--border);color:var(--text2);
+  font-family:'Share Tech Mono',monospace;font-size:11px;padding:5px 12px;
+  cursor:pointer;letter-spacing:.8px;transition:border-color .2s,color .2s}
+.btn:hover{border-color:var(--neon);color:var(--neon)}
+.btn.ok{border-color:var(--neon2);color:var(--neon2)}
+
+.main{display:grid;grid-template-columns:1fr 340px;flex:1;overflow:hidden}
+
+.cwrap{padding:18px 14px 14px 14px;overflow:hidden;position:relative}
+canvas{display:block;cursor:crosshair}
+
+#popup{
+  position:absolute;display:none;visibility:hidden;pointer-events:auto;z-index:20;
+  background:var(--bg2);border:1.5px solid var(--neon2);padding:10px 14px;width:182px;
+}
+.phead{display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:7px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.pheadlbl{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--neon2);letter-spacing:2px}
+.pclose{background:transparent;border:none;color:var(--text3);cursor:pointer;
+  font-size:15px;line-height:1;padding:0 0 0 8px;font-family:'Share Tech Mono',monospace}
+.pclose:hover{color:var(--accent)}
+.prow{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:5px}
+.prow:last-child{margin-bottom:0}
+.pkey{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2)}
+.pval{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--neon);white-space:nowrap;font-weight:700}
+.pval.act{color:var(--accent)}
+.pval.slp{color:var(--neon2)}
+
+.side{border-left:1px solid var(--border);background:var(--bg2);
+  display:flex;flex-direction:column;overflow-y:auto}
+.sec{padding:14px 18px;border-bottom:1px solid var(--border2)}
+.seclabel{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--neon);
+  letter-spacing:2.5px;margin-bottom:13px}
+
+.slrow{display:flex;align-items:center;gap:0;margin-bottom:11px}
+.slrow:last-of-type{margin-bottom:0}
+.sllabel{font-size:13px;color:var(--text2);width:44px;flex-shrink:0}
+.sllabel sub{font-size:.65em;vertical-align:sub}
+.slwrap{flex:1;display:flex;align-items:center}
+input[type=range]{width:100%;height:4px;-webkit-appearance:none;appearance:none;
+  background:var(--border);outline:none;cursor:pointer;border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;
+  background:var(--neon);border-radius:50%;cursor:pointer}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;background:var(--neon);
+  border-radius:50%;cursor:pointer;border:none}
+.slval{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--neon);
+  font-weight:700;text-align:right;min-width:72px;flex-shrink:0;padding-left:10px}
+
+.cellgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.icell{background:var(--bg3);border:1px solid var(--border2);padding:10px 12px}
+.iclabel{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text3);
+  letter-spacing:1.2px;margin-bottom:6px}
+.icval{font-family:'Exo 2',sans-serif;font-size:22px;color:var(--neon);font-weight:700;line-height:1}
+.icunit{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2);margin-top:3px}
+.icfm{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text3);margin-top:4px}
+
+.togrow{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.toglabel{font-size:13px;color:var(--text2)}
+.tog{width:34px;height:18px;background:var(--border);border-radius:9px;
+  position:relative;transition:background .2s;flex-shrink:0}
+.tog.on{background:var(--neon2)}
+.tog::after{content:'';position:absolute;width:13px;height:13px;background:#fff;
+  border-radius:50%;top:2.5px;left:2.5px;transition:left .2s}
+.tog.on::after{left:18.5px}
+
+.hint{font-size:12px;color:var(--text2);padding:14px 18px;line-height:1.85}
+.hleg{display:flex;align-items:center;gap:8px;margin-top:5px}
+.linesample{width:26px;height:2px;flex-shrink:0}
+</style>
+</head>
+<body>
+<header>
+  <div class="title">
+    <span class="br">{ &thinsp;</span>HENFALDSLOVEN &mdash; N(t) = N<sub>0</sub>&thinsp;&middot;&thinsp;e<sup>&thinsp;&minus;kt</sup><span class="br">&thinsp; }</span>
+  </div>
+  <div class="hbtns">
+    <button class="btn" id="themeBtn" onclick="toggleTheme()">&#9685; LYS TILSTAND</button>
+    <button class="btn" id="copyBtn" onclick="copyCode()">&#10697; KOPI&Eacute;R KODE</button>
+  </div>
+</header>
+
+<div class="main">
+  <div class="cwrap" id="cwrap">
+    <canvas id="graph"></canvas>
+    <div id="popup">
+      <div class="phead">
+        <span class="pheadlbl">AFL&AElig;SNING</span>
+        <button class="pclose" onclick="closePopup()">&#x2715;</button>
+      </div>
+      <div class="prow"><span class="pkey">t</span><span class="pval" id="pt">&mdash;</span></div>
+      <div class="prow"><span class="pkey">N(t)</span><span class="pval" id="pN">&mdash;</span></div>
+      <div class="prow"><span class="pkey">A(t)</span><span class="pval act" id="pA">&mdash;</span></div>
+      <div class="prow"><span class="pkey">dN/dt</span><span class="pval slp" id="pS">&mdash;</span></div>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="sec">
+      <div class="seclabel">&#9658; PARAMETRE</div>
+      <div class="slrow">
+        <span class="sllabel">N<sub>0</sub></span>
+        <div class="slwrap"><input type="range" min="1000" max="10000" step="1000" value="5000" oninput="setN0(+this.value)"></div>
+        <span class="slval" id="vN0">5000</span>
+      </div>
+      <div class="slrow">
+        <span class="sllabel">T<sub>&frac12;</sub></span>
+        <div class="slwrap"><input type="range" min="10" max="100" step="1" value="30" oninput="setT12(+this.value)"></div>
+        <span class="slval" id="vT12">30 s</span>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="seclabel">&#9658; BEREGNEDE ST&Oslash;RRELSER</div>
+      <div class="cellgrid">
+        <div class="icell">
+          <div class="iclabel">HENFALDSKONSTANT</div>
+          <div class="icval" id="vK">&mdash;</div>
+          <div class="icunit">s<sup style="font-size:.65em">&#x2212;1</sup></div>
+          <div class="icfm">k = ln(2)/T&#x00BD;</div>
+        </div>
+        <div class="icell">
+          <div class="iclabel">STARTAKTIVITET</div>
+          <div class="icval" id="vA0">&mdash;</div>
+          <div class="icunit">Bq</div>
+          <div class="icfm">A&#x2080; = k&middot;N&#x2080;</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="seclabel">&#9658; VISNING</div>
+      <label class="togrow" onclick="toggleHalf()">
+        <div class="tog" id="togHalf"></div>
+        <span class="toglabel">Vis halveringstid p&aring; grafen</span>
+      </label>
+    </div>
+
+    <div class="sec" style="flex:1;border-bottom:none">
+      <div class="hint">
+        Klik p&aring; grafen for at afl&aelig;se v&aelig;rdier.<br>Klik &#x2715; for at lukke boksen.
+        <div class="hleg"><span class="linesample" style="border-top:3px dashed var(--accent)"></span>tangent &nbsp;= dN/dt</div>
+        <div class="hleg"><span class="linesample" style="border-top:2px dashed var(--neon2)"></span>halveringstrin</div>
+        <div class="hleg"><span style="color:var(--neon2);font-family:'Share Tech Mono',monospace">&#9711;</span>&ensp;afl&aelig;sningspunkt</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var N0=5000, T12=30, clickT=null, showHalf=false, isLight=false, tMax=200;
+var cv=document.getElementById('graph'), cx=cv.getContext('2d');
+var PAD={top:30,right:26,bot:52,left:76};
+var CPL=14, CPT=18;
+var arrowFrom=null, arrowTo=null;
+
+function col(){
+  return isLight
+    ?{bg:'#e8edf4',grid:'rgba(0,82,184,.10)',ax:'#96b2c8',tick:'#3d6080',
+      curve:'#0052b8',tan:'#c03000',dot:'#007848',half:'#007848',
+      halfFill:'rgba(0,120,72,.15)',halfText:'#005c38',popBorder:'#007848',
+      arrow:'#007848',text2:'#3d6080'}
+    :{bg:'#07090f',grid:'rgba(0,229,255,.07)',ax:'#1b2e42',tick:'#6a8fa8',
+      curve:'#00e5ff',tan:'#ff7040',dot:'#00ff99',half:'#00cc7a',
+      halfFill:'rgba(0,204,120,.10)',halfText:'#00ff99',popBorder:'#00ff99',
+      arrow:'#00ff99',text2:'#6a8fa8'};
+}
+
+function sig3(x){
+  if(x===0) return '0';
+  return parseFloat(x.toPrecision(3)).toString();
+}
+
+function resize(){
+  var w=document.getElementById('cwrap');
+  cv.width=w.clientWidth-CPL*2;
+  cv.height=w.clientHeight-CPT-14;
+  if(clickT!==null) repositionPopup(clickT);
+  draw();
+}
+
+function draw(){
+  var W=cv.width,H=cv.height;
+  var pw=W-PAD.left-PAD.right,ph=H-PAD.top-PAD.bot;
+  var k=Math.LN2/T12;
+  var c=col();
+
+  cx.clearRect(0,0,W,H);
+  cx.fillStyle=c.bg; cx.fillRect(0,0,W,H);
+
+  cx.strokeStyle=c.grid; cx.lineWidth=.5;
+  for(var i=0;i<=10;i++){var gx=PAD.left+(i/10)*pw;cx.beginPath();cx.moveTo(gx,PAD.top);cx.lineTo(gx,PAD.top+ph);cx.stroke();}
+  for(var j=0;j<=5;j++){var gy=PAD.top+(j/5)*ph;cx.beginPath();cx.moveTo(PAD.left,gy);cx.lineTo(PAD.left+pw,gy);cx.stroke();}
+
+  cx.strokeStyle=c.ax; cx.lineWidth=1;
+  cx.beginPath();cx.moveTo(PAD.left,PAD.top);cx.lineTo(PAD.left,PAD.top+ph);cx.lineTo(PAD.left+pw,PAD.top+ph);cx.stroke();
+
+  cx.font='11px "Share Tech Mono",monospace';
+  cx.fillStyle=c.tick; cx.textAlign='center';
+  for(var i=0;i<=10;i++) cx.fillText((i*20).toString(),PAD.left+(i/10)*pw,PAD.top+ph+17);
+  cx.textAlign='right';
+  for(var j=0;j<=5;j++) cx.fillText(Math.round(N0*(1-j/5)).toString(),PAD.left-8,PAD.top+(j/5)*ph+4);
+
+  cx.fillStyle=c.text2; cx.font='12px "Exo 2",sans-serif'; cx.textAlign='center';
+  cx.fillText('t  [s]',PAD.left+pw/2,PAD.top+ph+36);
+  cx.save();cx.translate(13,PAD.top+ph/2);cx.rotate(-Math.PI/2);cx.fillText('N(t)',0,0);cx.restore();
+
+  if(showHalf){
+    var steps=0;
+    for(var h=1; h*T12<=tMax && steps<7; h++, steps++){
+      var xt=PAD.left+(h*T12/tMax)*pw;
+      var Nh=N0*Math.pow(0.5,h);
+      var yn=PAD.top+ph-(Nh/N0)*ph;
+
+      cx.strokeStyle=c.half; cx.lineWidth=1.8; cx.setLineDash([7,5]);
+      cx.beginPath();cx.moveTo(PAD.left,yn);cx.lineTo(xt,yn);cx.stroke();
+      cx.beginPath();cx.moveTo(xt,yn);cx.lineTo(xt,PAD.top+ph);cx.stroke();
+      cx.setLineDash([]);
+
+      cx.fillStyle=c.half;
+      cx.beginPath();cx.arc(xt,yn,4,0,6.283);cx.fill();
+
+      cx.font='bold 11px "Share Tech Mono",monospace';
+      cx.textAlign='left'; cx.fillStyle=c.halfText;
+      cx.fillText('T\u00BD\u00B7'+h, xt+6, PAD.top+ph-5);
+
+      cx.textAlign='left';
+      var labelPow = h===1 ? 'N\u2080/2' : h===2 ? 'N\u2080/4' : h===3 ? 'N\u2080/8' : 'N\u2080/'+Math.pow(2,h);
+      cx.fillText(labelPow, PAD.left+6, yn-5);
+    }
+  }
+
+  cx.strokeStyle=c.curve; cx.lineWidth=2.5;
+  cx.beginPath();
+  for(var px=0;px<=pw;px++){
+    var t=(px/pw)*tMax, NN=N0*Math.exp(-k*t);
+    if(px===0) cx.moveTo(PAD.left+px,PAD.top+ph-(NN/N0)*ph);
+    else cx.lineTo(PAD.left+px,PAD.top+ph-(NN/N0)*ph);
+  }
+  cx.stroke();
+
+  if(clickT!==null){
+    var Nc=N0*Math.exp(-k*clickT), slope=-k*Nc;
+    var cxc=PAD.left+(clickT/tMax)*pw, cyc=PAD.top+ph-(Nc/N0)*ph;
+
+    cx.strokeStyle=isLight?'rgba(0,82,184,.18)':'rgba(0,229,255,.15)';
+    cx.lineWidth=.7; cx.setLineDash([3,3]);
+    cx.beginPath();cx.moveTo(cxc,PAD.top);cx.lineTo(cxc,PAD.top+ph);cx.stroke();
+    cx.setLineDash([]);
+
+    var span=22;
+    var t1=Math.max(0,clickT-span),t2=Math.min(tMax,clickT+span);
+    var x1=PAD.left+(t1/tMax)*pw, y1=PAD.top+ph-((Nc+slope*(t1-clickT))/N0)*ph;
+    var x2=PAD.left+(t2/tMax)*pw, y2=PAD.top+ph-((Nc+slope*(t2-clickT))/N0)*ph;
+    cx.strokeStyle=c.tan; cx.lineWidth=3.5; cx.setLineDash([9,5]);
+    cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);cx.stroke();
+    cx.setLineDash([]);
+
+    cx.fillStyle=c.dot;
+    cx.beginPath();cx.arc(cxc,cyc,5,0,6.283);cx.fill();
+    cx.strokeStyle=c.dot; cx.lineWidth=1.5;
+    cx.beginPath();cx.arc(cxc,cyc,10,0,6.283);cx.stroke();
+    cx.globalAlpha=.2;cx.beginPath();cx.arc(cxc,cyc,17,0,6.283);cx.stroke();cx.globalAlpha=1;
+
+    if(arrowFrom && arrowTo){
+      var ax=arrowFrom.x, ay=arrowFrom.y, bx=arrowTo.x, by=arrowTo.y;
+      var dx=bx-ax, dy=by-ay, len=Math.sqrt(dx*dx+dy*dy);
+      if(len>22){
+        var nx=dx/len, ny=dy/len;
+        var sx=ax+nx*5, sy=ay+ny*5;
+        var ex=bx-nx*18, ey=by-ny*18;
+        cx.strokeStyle=c.arrow; cx.lineWidth=1.8; cx.setLineDash([6,4]);
+        cx.beginPath();cx.moveTo(sx,sy);cx.lineTo(ex,ey);cx.stroke();
+        cx.setLineDash([]);
+        cx.fillStyle=c.arrow;
+        cx.save();cx.translate(bx-nx*18,by-ny*18);cx.rotate(Math.atan2(dy,dx));
+        cx.beginPath();cx.moveTo(0,0);cx.lineTo(-9,-4.5);cx.lineTo(-9,4.5);cx.closePath();cx.fill();
+        cx.restore();
+      }
+    }
+  }
+}
+
+function getPopupCorner(dotCX, dotCY, popW, popH){
+  var pw2=cv.width-PAD.left-PAD.right, ph2=cv.height-PAD.top-PAD.bot;
+  var m=12;
+  var corners=[
+    {x:PAD.left+m, y:PAD.top+m},
+    {x:PAD.left+pw2-popW-m, y:PAD.top+m},
+    {x:PAD.left+m, y:PAD.top+ph2-popH-m},
+    {x:PAD.left+pw2-popW-m, y:PAD.top+ph2-popH-m}
+  ];
+  var best=corners[0], bestD=-1;
+  for(var i=0;i<corners.length;i++){
+    var cx2=corners[i].x+popW/2, cy2=corners[i].y+popH/2;
+    var d=Math.sqrt((cx2-dotCX)*(cx2-dotCX)+(cy2-dotCY)*(cy2-dotCY));
+    if(d>bestD){bestD=d; best=corners[i];}
+  }
+  return best;
+}
+
+function edgeAnchor(px, py, popW, popH, tx, ty){
+  var cx2=px+popW/2, cy2=py+popH/2;
+  var dx=tx-cx2, dy=ty-cy2;
+  if(Math.abs(dx)<0.001 && Math.abs(dy)<0.001) return {x:cx2,y:cy2};
+  var tX=dx!==0 ? (dx>0?popW/2:-popW/2)/Math.abs(dx) : Infinity;
+  var tY=dy!==0 ? (dy>0?popH/2:-popH/2)/Math.abs(dy) : Infinity;
+  var s=Math.min(Math.abs(tX),Math.abs(tY));
+  return {x:cx2+dx*s, y:cy2+dy*s};
+}
+
+function repositionPopup(t){
+  var pop=document.getElementById('popup');
+  if(pop.style.display==='none') return;
+  var k=Math.LN2/T12, Nc=N0*Math.exp(-k*t);
+  var pw2=cv.width-PAD.left-PAD.right, ph2=cv.height-PAD.top-PAD.bot;
+  var dotCX=PAD.left+(t/tMax)*pw2, dotCY=PAD.top+ph2-(Nc/N0)*ph2;
+  var popW=pop.offsetWidth||182, popH=pop.offsetHeight||138;
+  var offset=38;
+  var cw=document.getElementById('cwrap');
+  var canvasW=cv.width, canvasH=cv.height;
+
+  // Try 4 placements: right, left, above, below — pick first that fits fully inside canvas
+  var candidates=[
+    {x:dotCX+offset,         y:dotCY-popH/2},          // right
+    {x:dotCX-popW-offset,    y:dotCY-popH/2},          // left
+    {x:dotCX-popW/2,         y:dotCY-popH-offset},     // above
+    {x:dotCX-popW/2,         y:dotCY+offset}            // below
+  ];
+  var chosen=null;
+  for(var i=0;i<candidates.length;i++){
+    var cx2=candidates[i].x, cy2=candidates[i].y;
+    if(cx2>=PAD.left && cx2+popW<=canvasW-PAD.right+4 && cy2>=PAD.top && cy2+popH<=canvasH-PAD.bot+4){
+      chosen=candidates[i]; break;
+    }
+  }
+  if(!chosen){
+    // fallback: clamp whichever is closest to right
+    chosen=candidates[0];
+    chosen.x=Math.max(PAD.left, Math.min(canvasW-PAD.right-popW, chosen.x));
+    chosen.y=Math.max(PAD.top,  Math.min(canvasH-PAD.bot-popH,  chosen.y));
+  }
+  pop.style.left=Math.round(chosen.x+CPL)+'px';
+  pop.style.top= Math.round(chosen.y+CPT)+'px';
+  var anchor=edgeAnchor(chosen.x,chosen.y,popW,popH,dotCX,dotCY);
+  arrowFrom=anchor;
+  arrowTo={x:dotCX,y:dotCY};
+}
+
+function showPopup(t){
+  var k=Math.LN2/T12, N=N0*Math.exp(-k*t), A=k*N;
+  document.getElementById('pt').textContent=t.toFixed(1)+' s';
+  document.getElementById('pN').textContent=Math.round(N).toString();
+  document.getElementById('pA').textContent=sig3(A)+' Bq';
+  document.getElementById('pS').textContent='\u2212'+sig3(A)+' s\u207B\u00B9';
+  var pop=document.getElementById('popup');
+  pop.style.visibility='hidden'; pop.style.display='block';
+  repositionPopup(t);
+  pop.style.visibility='visible';
+}
+
+function closePopup(){
+  document.getElementById('popup').style.display='none';
+  clickT=null; arrowFrom=null; arrowTo=null;
+  draw();
+}
+
+cv.addEventListener('click',function(e){
+  var r=cv.getBoundingClientRect();
+  var canvasX=(e.clientX-r.left)*(cv.width/r.width);
+  var pw2=cv.width-PAD.left-PAD.right;
+  if(canvasX<PAD.left||canvasX>PAD.left+pw2) return;
+  clickT=((canvasX-PAD.left)/pw2)*tMax;
+  showPopup(clickT);
+  draw();
+});
+
+function update(){
+  var k=Math.LN2/T12, A0=k*N0;
+  document.getElementById('vK').textContent=sig3(k);
+  document.getElementById('vA0').textContent=sig3(A0);
+  if(clickT!==null) showPopup(clickT);
+  draw();
+}
+
+function setN0(v){ N0=v; document.getElementById('vN0').textContent=v; update(); }
+function setT12(v){ T12=v; document.getElementById('vT12').textContent=v+' s'; update(); }
+function toggleHalf(){ showHalf=!showHalf; document.getElementById('togHalf').classList.toggle('on',showHalf); draw(); }
+
+function toggleTheme(){
+  isLight=!isLight;
+  document.body.classList.toggle('light',isLight);
+  document.getElementById('themeBtn').textContent=isLight?'\u2600 M\u00D8RK TILSTAND':'\u25D1 LYS TILSTAND';
+  draw();
+}
+
+function copyCode(){
+  navigator.clipboard.writeText(document.documentElement.outerHTML).then(function(){
+    var b=document.getElementById('copyBtn');
+    b.textContent='\u2713 KOPIER\u00C9T'; b.classList.add('ok');
+    setTimeout(function(){ b.textContent='\u29C9 KOPI\u00C9R KODE'; b.classList.remove('ok'); },2200);
+  }).catch(function(){ alert('Kopiering mislykkedes.'); });
+}
+
+window.addEventListener('resize',resize);
+window.addEventListener('load',function(){ update(); resize(); });
+</script>
+</body>
+</html>
